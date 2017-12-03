@@ -18,6 +18,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        
+        <provider
+            android:authorities="com.example.krayz.movie_intermediate"
+            android:name=".data.offline.MovieContentProvider"
+            android:exported="false"/>
     </application>
 
 </manifest>

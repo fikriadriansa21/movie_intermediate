@@ -58,8 +58,9 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.MainHolder> {
         public MainHolder(View itemView) {
             super(itemView);
 
-            imageRow = (ImageView) itemView.findViewById(R.id.imageView);
+            imageRow = (ImageView) itemView.findViewById(R.id.imageRow);
             titleRow = (TextView) itemView.findViewById(R.id.titleRow);
         }
     }
+
 }
