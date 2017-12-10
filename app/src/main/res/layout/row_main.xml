@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -16,10 +16,13 @@
         <TextView
             android:id="@+id/titleRow"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="#000"
+            android:layout_height="53dp"
+            android:background="#792d2b2a"
             android:textColor="#fff"
             android:padding="16dp"
+            android:maxLines="2"
+            android:ellipsize="end"
+            android:layout_gravity="bottom"
             android:text="Title"/>
 
-</LinearLayout>
+</FrameLayout>

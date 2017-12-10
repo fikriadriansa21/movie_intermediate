@@ -8,12 +8,15 @@ import android.os.Handler;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.widget.Toast;
+
 
 import com.example.krayz.movie_intermediate.R;
 import com.example.krayz.movie_intermediate.data.ApiClient;
@@ -26,10 +29,12 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
+public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>,SwipeRefreshLayout.OnRefreshListener {
 
     private RecyclerView mRecyclerMain;
     private MainAdapter mAdapter;
+    private SwipeRefreshLayout mRefreshLayout;
+    private Toolbar mToolbar;
     private List<MainDao> mData= new ArrayList<>();
 
     private String TAG = MainActivity.class.getSimpleName();
@@ -48,14 +53,47 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         GridLayoutManager gridLayoutManager = new GridLayoutManager(this,2);
 
         mRecyclerMain = (RecyclerView) findViewById(R.id.recyclerView);
+        mRefreshLayout =(SwipeRefreshLayout) findViewById(R.id.swipeMain);
+        mToolbar = (Toolbar)findViewById(R.id.toolbarMain);
+
+        setSupportActionBar(mToolbar);
+        getSupportActionBar().setTitle(R.string.myFilm);
+
+        mRefreshLayout.setOnRefreshListener(this);
+
         mRecyclerMain.setAdapter(mAdapter);
         mRecyclerMain.setLayoutManager(gridLayoutManager);
 
+        getDataMovie();
+//        new Handler().postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                mData.add(new MainDao("Satu","https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Maby_multif_F_050222_061_kng.jpg/180px-Maby_multif_F_050222_061_kng.jpg"));
+//                mData.add(new MainDao("Dua","http://cdn2.tstatic.net/aceh/foto/bank/images/buaya_20151031_114802.jpg"));
+//                mData.add(new MainDao("Tiga","https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Maby_multif_F_050222_061_kng.jpg/180px-Maby_multif_F_050222_061_kng.jpg"));
+//                mData.add(new MainDao("Empat","https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Maby_multif_F_050222_061_kng.jpg/180px-Maby_multif_F_050222_061_kng.jpg"));
+//                mData.add(new MainDao("Lima","https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Maby_multif_F_050222_061_kng.jpg/180px-Maby_multif_F_050222_061_kng.jpg"));
+//                mData.add(new MainDao("Enam","https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Maby_multif_F_050222_061_kng.jpg/180px-Maby_multif_F_050222_061_kng.jpg"));
+//                mData.add(new MainDao("Tujuh","https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Maby_multif_F_050222_061_kng.jpg/180px-Maby_multif_F_050222_061_kng.jpg"));
+//                mData.add(new MainDao("Delapan","https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Maby_multif_F_050222_061_kng.jpg/180px-Maby_multif_F_050222_061_kng.jpg"));
+//                mData.add(new MainDao("Sembilan","https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Maby_multif_F_050222_061_kng.jpg/180px-Maby_multif_F_050222_061_kng.jpg"));
+//                mData.add(new MainDao("Sepuluh","https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Maby_multif_F_050222_061_kng.jpg/180px-Maby_multif_F_050222_061_kng.jpg"));
+//
+//                mAdapter.notifyDataSetChanged();
+//            }
+//        },5000);
+
+//        Toast.makeText(this,"Loading Data 5 detik . . .",Toast.LENGTH_SHORT).show();
+    }
+
+    private void getDataMovie(){
+        mRefreshLayout.setRefreshing(true);
         ApiClient.service().getMovieList("e53249564abad5cf3b4c348de0c26aee")
                 .enqueue(new Callback<MovieResponseDao>() {
                     @Override
                     public void onResponse(Call<MovieResponseDao> call, Response<MovieResponseDao> response) {
                         if (response.isSuccessful()) {
+                            mRefreshLayout.setRefreshing(false);
                             Uri deleteUri = MovieContract.MovieEntry.CONTENT_URI;
                             getContentResolver().delete(deleteUri,null,null);
 
@@ -86,36 +124,19 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                             }
                             getSupportLoaderManager().restartLoader(0,null,MainActivity.this);
 //                            mAdapter.notifyDataSetChanged();
+                        }else{
+                            mRefreshLayout.setRefreshing(false);
+                            Toast.makeText(MainActivity.this, "Internal server error", Toast.LENGTH_SHORT).show();
                         }
                     }
 
                     @Override
                     public void onFailure(Call<MovieResponseDao> call, Throwable t) {
+                        mRefreshLayout.setRefreshing(false);
                         Toast.makeText(MainActivity.this,t.getMessage(),Toast.LENGTH_SHORT).show();
                     }
                 });
 
-
-
-//        new Handler().postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//                mData.add(new MainDao("Satu","https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Maby_multif_F_050222_061_kng.jpg/180px-Maby_multif_F_050222_061_kng.jpg"));
-//                mData.add(new MainDao("Dua","http://cdn2.tstatic.net/aceh/foto/bank/images/buaya_20151031_114802.jpg"));
-//                mData.add(new MainDao("Tiga","https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Maby_multif_F_050222_061_kng.jpg/180px-Maby_multif_F_050222_061_kng.jpg"));
-//                mData.add(new MainDao("Empat","https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Maby_multif_F_050222_061_kng.jpg/180px-Maby_multif_F_050222_061_kng.jpg"));
-//                mData.add(new MainDao("Lima","https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Maby_multif_F_050222_061_kng.jpg/180px-Maby_multif_F_050222_061_kng.jpg"));
-//                mData.add(new MainDao("Enam","https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Maby_multif_F_050222_061_kng.jpg/180px-Maby_multif_F_050222_061_kng.jpg"));
-//                mData.add(new MainDao("Tujuh","https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Maby_multif_F_050222_061_kng.jpg/180px-Maby_multif_F_050222_061_kng.jpg"));
-//                mData.add(new MainDao("Delapan","https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Maby_multif_F_050222_061_kng.jpg/180px-Maby_multif_F_050222_061_kng.jpg"));
-//                mData.add(new MainDao("Sembilan","https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Maby_multif_F_050222_061_kng.jpg/180px-Maby_multif_F_050222_061_kng.jpg"));
-//                mData.add(new MainDao("Sepuluh","https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Maby_multif_F_050222_061_kng.jpg/180px-Maby_multif_F_050222_061_kng.jpg"));
-//
-//                mAdapter.notifyDataSetChanged();
-//            }
-//        },5000);
-
-//        Toast.makeText(this,"Loading Data 5 detik . . .",Toast.LENGTH_SHORT).show();
     }
 
     @SuppressLint("StaticFieldLeak")
@@ -165,14 +186,23 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             data.moveToPosition(i);
 
             mData.add(new MainDao(
-               data.getString(data.getColumnIndex(MovieContract.MovieEntry.COLUMN_TITLE)),
-                    "https://image.tmdb.org/t/p/w185/" + data.getString(data.getColumnIndex(MovieContract.MovieEntry.COLUMN_POSTER_PATH))
+                    data.getString(data.getColumnIndex(MovieContract.MovieEntry.COLUMN_TITLE)),
+                    data.getString(data.getColumnIndex(MovieContract.MovieEntry.COLUMN_OVERVIEW)),
+                    "https://image.tmdb.org/t/p/w185/" + data.getString(data.getColumnIndex(MovieContract.MovieEntry.COLUMN_BACKDROP_PATH)),
+                    "https://image.tmdb.org/t/p/w185/" + data.getString(data.getColumnIndex(MovieContract.MovieEntry.COLUMN_POSTER_PATH)),
+                    data.getString(data.getColumnIndex(MovieContract.MovieEntry.COLUMN_RELEASE_DATE))
             ));
         }
+        mAdapter.notifyDataSetChanged();
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
 
+    }
+
+    @Override
+    public void onRefresh() {
+        getDataMovie();
     }
 }
